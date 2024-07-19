@@ -1,33 +1,22 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import Post from './Post';
-
-const AppContainer = styled.div`
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-`;
+import React from 'react';
+import {Route, Routes} from "react-router-dom";
+import LoginPage from './Pages/LoginPage';
+import SignUpPage from './Pages/SignUpPage';
+import MainPage from './Pages/MainPage';
+import MyPage from './Pages/MyPage';
+import MyInfoEditPage from './Pages/MyInfoEditPage';
 
 const App = () => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      username: 'user1',
-      content: 'This is a post',
-      comments: []
-    }
-  ]);
-
-  const addComment = (postId, comment) => {
-    setPosts(posts.map(post => post.id === postId ? { ...post, comments: [...post.comments, comment] } : post));
-  };
-
   return (
-    <AppContainer>
-      {posts.map(post => (
-        <Post key={post.id} post={post} addComment={addComment} />
-      ))}
-    </AppContainer>
+    <div className="App">
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/main" element={<MainPage />} />
+        <Route path="/mypage" element={<MyPage />} />
+        <Route path="/profileEdit" element={<MyInfoEditPage />} />
+      </Routes>
+    </div>
   );
 };
 
