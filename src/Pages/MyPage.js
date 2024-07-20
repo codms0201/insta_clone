@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import styled, { createGlobalStyle } from "styled-components";
 import { useNavigate } from "react-router-dom";
-import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 import Menu from '../Components/Menu';
@@ -29,6 +28,10 @@ function MyPage() {
     navigate(`../profileEdit`);
   };
 
+  const goToWrite = () => {
+    navigate(`../write`);
+  };
+
   const openPostModal = (index) => {
     setCurrentPostIndex(index);
     setPostModalOpen(true);
@@ -52,17 +55,6 @@ function MyPage() {
     setComments(updatedComments);
   };
 
-  const settings = {
-    infinite: false,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    initialSlide: currentPostIndex,
-    afterChange: (index) => setCurrentPostIndex(index),
-    prevArrow: <CustomArrow direction="left" />,
-    nextArrow: <CustomArrow direction="right" />
-  };
-
   return (
     <div>
       <GlobalStyle />
@@ -84,7 +76,7 @@ function MyPage() {
                 <P_btn onClick={goToProfileEdit}>
                   프로필 편집
                 </P_btn>
-                <P_btn onClick={openCreateModal}>
+                <P_btn onClick={goToWrite}>
                   만들기
                 </P_btn>
               </NickName>
@@ -151,12 +143,6 @@ function MyPage() {
     </div>
   );
 }
-
-const CustomArrow = ({ direction, onClick }) => (
-  <Arrow direction={direction} onClick={onClick}>
-    {direction === "left" ? "◀" : "▶"}
-  </Arrow>
-);
 
 export default MyPage;
 
@@ -467,41 +453,6 @@ const Comment=styled.div`
   font-weight: 500;
   line-height: normal;
   margin-left: 8px;
-  margin-top: 12px;
+  margin-top: 10px;
   text-align: left;
-`;
-
-const StyledSlider = styled(Slider)`
-  .slick-prev, .slick-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 1000;
-  }
-
-  .slick-prev {
-    left: 20px;
-  }
-
-  .slick-next {
-    right: 20px;
-  }
-
-  .slick-prev:before, .slick-next:before {
-    color: white;
-    font-size: 30px;
-  }
-`;
-
-const Arrow = styled.div`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 30px;
-  color: white;
-  z-index: 1000;
-
-  ${({ direction }) =>
-    direction === "left" ? `left: 20px;` : `right: 20px;`}
 `;
