@@ -5,6 +5,7 @@ import SignUpPage from './Pages/SignUpPage';
 import MainPage from './Pages/MainPage';
 import MyPage from './Pages/MyPage';
 import MyInfoEditPage from './Pages/MyInfoEditPage';
+import WriteModal from './Components/WritingModal';
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         <Route path="/main" element={<MainPage />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/profileEdit" element={<MyInfoEditPage />} />
+        <Route path="/write" element={<WriteModal />} />
       </Routes>
     </div>
   );

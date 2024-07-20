@@ -7,7 +7,6 @@ import search from '../Assets/Imgs/search.svg';
 import reels from '../Assets/Imgs/reels.svg';
 import dm from '../Assets/Imgs/dm.svg';
 import alert from '../Assets/Imgs/alert.svg';
-import makeBtn from '../Assets/Imgs/makeBtn.svg';
 import profile from '../Assets/Imgs/profile.svg';
 import menubar from '../Assets/Imgs/menubar.svg';
 
