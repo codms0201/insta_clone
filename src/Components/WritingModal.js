@@ -18,14 +18,14 @@ const WriteModal = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content) {
+    if (!file || !content) {
       alert('Both image and content are required.');
       return;
     }
 
     const formData = new FormData();
     formData.append('content', content);
-    formData.append('p_imgUrl', file);
+    formData.append('imgUrl', file);
 
     setLoading(true);
     try {

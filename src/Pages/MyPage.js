@@ -11,12 +11,59 @@ import P1 from '../Assets/Imgs/망곰이1.png';
 import P2 from '../Assets/Imgs/망곰이2.png';
 import P3 from '../Assets/Imgs/망곰이3.png';
 
+import { postWritingAPI } from '../API/AxiosAPI';
+
 function MyPage() {
   const navigate = useNavigate();
   const [postModalOpen, setPostModalOpen] = useState(false);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [writeModalOpen, setWriteModalOpen] = useState(false);
   const [currentPostIndex, setCurrentPostIndex] = useState(0);
   const [comments, setComments] = useState([[], [], []]);
+
+  const [file, setFile] = useState(null);
+  const [content, setContent] = useState('');
+  const [imagePreview, setImagePreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    setImagePreview(URL.createObjectURL(selectedFile));
+  };
+
+  const handleContentChange = (e) => {
+    setContent(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!file || !content) {
+      alert('Both image and content are required.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('content', content);
+    formData.append('imgUrl', file);
+
+    console.log(content);
+    console.log(file);
+
+    setLoading(true);
+    try {
+      await postWritingAPI(formData);
+      alert('Post created successfully!');
+      setWriteModalOpen(false); // Close the modal after successful submission
+      setFile(null);
+      setContent('');
+      setImagePreview(null); // Clear the state
+    } catch (err) {
+      setError('Failed to create post.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const posts = [
     { src: P1, description: "Post 1 description" },
@@ -28,10 +75,6 @@ function MyPage() {
     navigate(`../profileEdit`);
   };
 
-  const goToWrite = () => {
-    navigate(`../write`);
-  };
-
   const openPostModal = (index) => {
     setCurrentPostIndex(index);
     setPostModalOpen(true);
@@ -41,12 +84,15 @@ function MyPage() {
     setPostModalOpen(false);
   };
 
-  const openCreateModal = () => {
-    setCreateModalOpen(true);
+  const openWriteModal = () => {
+    setWriteModalOpen(true);
   };
 
-  const closeCreateModal = () => {
-    setCreateModalOpen(false);
+  const closeWriteModal = () => {
+    setWriteModalOpen(false);
+    setFile(null);
+    setContent('');
+    setImagePreview(null); // Clear the state
   };
 
   const addComment = (newComment) => {
@@ -76,7 +122,7 @@ function MyPage() {
                 <P_btn onClick={goToProfileEdit}>
                   프로필 편집
                 </P_btn>
-                <P_btn onClick={goToWrite}>
+                <P_btn onClick={() => openWriteModal()}>
                   만들기
                 </P_btn>
               </NickName>
@@ -99,6 +145,49 @@ function MyPage() {
             </Post>
           ))}
         </Posts>
+        {writeModalOpen && (
+          <Modal2>
+            <ModalOverlay2 onClick={closeWriteModal} />
+            <form onSubmit={handleSubmit}>
+            <ModalContent2>
+              <ModalHeader>
+                새 게시물 만들기
+                <ShareBtn type="submit" disabled={loading}>공유하기</ShareBtn>
+              </ModalHeader>
+              <ModalWriteContent>
+                <FileInputWrapper>
+                  <FileInput type="file" id="file" onChange={handleFileChange} />
+                  <FileInputLabel htmlFor="file">
+                    {imagePreview ? (
+                      <img src={imagePreview} alt="Selected" />
+                    ) : (
+                      "사진 업로드 하기!!"
+                    )}
+                  </FileInputLabel>
+                </FileInputWrapper>
+                <WriteContent>
+                <P_Modal_Profile2>
+                  <Ppp>
+                    <ProfileImage src={P_img} alt="Profile img" />
+                  </Ppp>
+                  <Name>
+                    cheche
+                  </Name>
+                </P_Modal_Profile2>
+                <Writtings>
+                  <TextArea 
+                    id="content" 
+                    value={content} 
+                    onChange={handleContentChange} 
+                    placeholder="문구를 입력하세요..."
+                  />
+                </Writtings>
+                </WriteContent>
+              </ModalWriteContent>
+            </ModalContent2>
+            </form>
+          </Modal2>
+        )}
         {postModalOpen && (
           <Modal>
             <ModalOverlay onClick={closePostModal} />
@@ -158,6 +247,90 @@ const GlobalStyle = createGlobalStyle`
   *, *::before, *::after {
     box-sizing: inherit;
   }
+`;
+
+const Writtings = styled.div`
+  margin-top: 20px;
+`;
+
+const ModalHeader = styled.div`
+  margin-left: 196px;
+  width: 900px;
+  height: 50px;
+  padding-top: 18px;
+  color: #FFF;
+  font-family: Inter;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+`;
+
+const ShareBtn = styled.button`
+  width: 64px;
+  height: 20px;
+  margin-left: 332px;
+  border: none;
+  background-color: #262626;
+  color: #0095F6;
+  &:hover{
+    cursor: pointer;
+  }
+`;
+
+const ModalWriteContent = styled.div`
+  display: flex;
+  width: 900px;
+  height: 450px;
+`;
+
+const FileInputWrapper = styled.div`
+  width: 450px;
+  height: 450px;
+  flex-shrink: 0;
+  border-radius: 0px 0px 0px 16px;
+  background: #D9D9D9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 450px;
+    height: 450px;
+    border-radius: 0px 0px 0px 16px;
+  }
+`;
+
+const FileInput = styled.input`
+  display: none;
+`;
+
+const FileInputLabel = styled.label`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #D9D9D9;
+  border-radius: 0px 0px 0px 16px;
+  color: #000;
+  cursor: pointer;
+  text-align: center;
+`;
+
+const WriteContent = styled.div`
+  width: 450px;
+  height: 450px;
+`;
+
+const TextArea = styled.textarea`
+  width: 400px;
+  height: 160px;
+  background: #262626;
+  color: #FFF;
+  border: none;
+  resize: none;
+  padding: 10px;
+  font-family: Inter;
+  font-size: 14px;
 `;
 
 const Container = styled.div`
@@ -336,6 +509,39 @@ const Post = styled.div`
   }
 `;
 
+const Modal2 = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalOverlay2 = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+`;
+
+const ModalContent2 = styled.div`
+  flex-direction: column;
+  position: relative;
+  background: #262626;
+  border-radius: 16px;
+  text-align: center;
+  width: 900px;
+  height: 500px;
+  display: flex;
+`;
+
 const Modal = styled.div`
   position: fixed;
   top: 0;
@@ -389,7 +595,7 @@ const P_Modal_Content = styled.div`
   gap: 11px; 
 `;
 
-const Name=styled.div`
+const Name = styled.div`
   margin-left: 11px;
   margin-top: 8px;
   color: #FFF;
@@ -398,7 +604,12 @@ const Name=styled.div`
   font-style: normal;
   font-weight: 700;
   line-height: normal; 
-`
+`;
+
+const P_Modal_Profile2 = styled.div`
+  display: flex;
+  padding-top: 6px;
+`;
 
 const P_Modal_Profile = styled.div`
   display: flex;
@@ -437,15 +648,14 @@ const Line5 = styled.div`
   top: 654px;
 `;
 
-const P_Cont=styled.div`
+const P_Cont = styled.div`
   width: 480px;
   height: 30px;
   flex-shrink: 0;
   margin-top: 32px;
+`;
 
-`
-
-const Comment=styled.div`
+const Comment = styled.div`
   color: #FFF;
   font-family: Inter;
   font-size: 12px;
