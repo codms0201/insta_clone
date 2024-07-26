@@ -34,3 +34,8 @@ export const Increased = atom({
     key: 'Increased',
     default: false,
 });
+
+export const userState = atom({
+    key: 'userState',
+    default: null,
+});

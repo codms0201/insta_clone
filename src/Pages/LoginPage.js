@@ -5,6 +5,7 @@ import logo from '../Assets/Imgs/logo.svg';
 import { UserData, LoginState } from '../Atom';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { loginAPI } from '../API/LoginAPI';
+import LoginBtn from '../Components/LoginBtn';
 
 function LoginPage() {
   const [loginCheck, setLoginCheck] = useState(false);
@@ -87,9 +88,10 @@ function LoginPage() {
               {passwordVisible ? '숨기기' : '비밀번호 보기'}
             </PasswordToggle>
           </WriteContainer2>
-          <LoginBtn type="submit">
+          {/* <LoginBtn type="submit">
             로그인
-          </LoginBtn>
+          </LoginBtn> */}
+          <LoginBtn/>
         </form>
       </Container1>
       <Container2>
@@ -215,23 +217,23 @@ const PasswordToggle = styled.button`
   cursor: pointer;
 `;
 
-const LoginBtn = styled.button`
-  width: 268px;
-  height: 32px;
-  margin-top: 15px;
-  flex-shrink: 0;
-  border: none;
-  border-radius: 8px;
-  background: #3C98FF;
+// const LoginBtn = styled.button`
+//   width: 268px;
+//   height: 32px;
+//   margin-top: 15px;
+//   flex-shrink: 0;
+//   border: none;
+//   border-radius: 8px;
+//   background: #3C98FF;
 
-  color: #FFF;
-  font-family: Inter;
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 900;
-  line-height: normal;
-  cursor: pointer;
-`;
+//   color: #FFF;
+//   font-family: Inter;
+//   font-size: 13px;
+//   font-style: normal;
+//   font-weight: 900;
+//   line-height: normal;
+//   cursor: pointer;
+// `;
 
 const OrContainer = styled.div`
   display: flex;

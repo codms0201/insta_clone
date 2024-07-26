@@ -1,12 +1,14 @@
 // src/components/FileUpload.js
 import React, { useState } from 'react';
 import { postWritingAPI } from '../API/AxiosAPI';
+import { uploadToS3 } from "../API/AwsS3";
 
 const WriteModal = () => {
   const [file, setFile] = useState(null);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [uploadResult, setUploadResult] = useState(null);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -29,6 +31,9 @@ const WriteModal = () => {
 
     setLoading(true);
     try {
+      const result = await uploadToS3(setFile, true);
+      setUploadResult(result);
+      alert("파일 업로드 성공!");
       await postWritingAPI(formData);
       alert('Post created successfully!');
     } catch (err) {
