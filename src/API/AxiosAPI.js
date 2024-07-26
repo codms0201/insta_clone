@@ -1,4 +1,5 @@
 import axios from 'axios';
+import axiosInstance from './axiosInstance';
 
 const server = process.env.REACT_APP_API_URL;
 
@@ -28,7 +29,7 @@ export const postUserAPI = async (data) => {
 //게시물 작성 포스트
 export const postWritingAPI = async (data) => {
     try {
-      const response = await axios.post(`${server}/api/boards/create`, data);
+      const response = await axiosInstance.post(`${server}/api/boards/create`, data);
       console.log(response.data);
       return response;
     } catch (err) {

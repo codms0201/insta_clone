@@ -1,5 +1,12 @@
 import { atom } from 'recoil';
 
+import {recoilPersist} from "recoil-persist";
+
+export const { persistAtom } = recoilPersist({
+    key: "userState",
+    storage: sessionStorage,
+  });
+
 export const UserData = atom({
     key: 'UserData',
     default: {
@@ -38,4 +45,5 @@ export const Increased = atom({
 export const userState = atom({
     key: 'userState',
     default: null,
+    effects_UNSTABLE: [persistAtom],
 });
