@@ -37,9 +37,9 @@ const LoginBtn = () => {
   };
 
   return (
-    <GoogleLoginButton onClick={userInfo ? handleLogout : handleLogin}>
+    <GoogleLoginButton onClick={handleLogin}>
       <FcGoogle />
-      <span>{userInfo ? "Logoutㄱㄱ" : "Login with Googleㄱㄱ"}</span>
+      <span>{userInfo ? "Logoutㄱㄱ" : "Continue with"}</span>
     </GoogleLoginButton>
   );
 };
@@ -47,7 +47,9 @@ const LoginBtn = () => {
 export default LoginBtn;
 
 const GoogleLoginButton = styled.button`
+  width: 320px;
   background-color: grey;
+  margin-top: 20px;
   color: #4285f4;
   padding: 10px 20px;
   border: none;

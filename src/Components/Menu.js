@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { useResetRecoilState } from 'recoil';
 import logo from '../Assets/Imgs/logo.svg';
 import home from '../Assets/Imgs/home.svg';
 import search from '../Assets/Imgs/search.svg';
 import reels from '../Assets/Imgs/reels.svg';
 import dm from '../Assets/Imgs/dm.svg';
-import alert from '../Assets/Imgs/alert.svg';
+import alertIcon from '../Assets/Imgs/alert.svg'; // Rename the import to avoid conflict with the alert function
 import profile from '../Assets/Imgs/profile.svg';
 import menubar from '../Assets/Imgs/menubar.svg';
+import { userState } from '../Atom';
 import AuthService from '../API/AuthService';
 
 function Menu({ onActiveChange }) {
@@ -16,11 +18,14 @@ function Menu({ onActiveChange }) {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isMakeModalOpen, setMakeModalOpen] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const resetUserState = useResetRecoilState(userState);
 
   const handleLogout = () => {
     AuthService.logout();
-    window.location.reload();
-};
+    resetUserState();
+    window.alert("로그아웃 되었습니다!"); // Use window.alert to avoid conflict
+    navigate("/"); // Navigate to the login page
+  };
 
   const goToMain = () => {
     navigate(`../main`);
@@ -53,7 +58,7 @@ function Menu({ onActiveChange }) {
     <Div>
       <Container>
         <Logo onClick={goToMain}>
-          <img src={logo} alt="Instargram logo" />
+          <img src={logo} alt="Instagram logo" />
         </Logo>
         <Button onClick={goToMain}>
           <img src={home} alt="home button" />
@@ -72,7 +77,7 @@ function Menu({ onActiveChange }) {
           <p>메시지</p>
         </Button>
         <Button>
-          <img src={alert} alt="alert button" />
+          <img src={alertIcon} alt="alert button" /> {/* Use alertIcon here */}
           <p>알림</p>
         </Button>
         <Button onClick={goToMyPage}>
@@ -113,7 +118,7 @@ function Menu({ onActiveChange }) {
       </Container>
     </Div>
   );
-};
+}
 
 export default Menu;
 
@@ -139,7 +144,7 @@ const Logo = styled.div`
 `;
 
 const Button = styled.button`
-  width: 90px;
+  width: 195px;
   height: 42px;
   display: flex;
   align-items: center;
@@ -198,9 +203,10 @@ const Button2 = styled.button`
 `;
 
 const M_Button = styled.button`
-  width: 195px;
+  width: 214px;
   height: 42px;
-  margin-top: 30px;
+  margin-top: 380px;
+  margin-left: -20px;
   display: flex;
   align-items: center;
   gap: 15px;

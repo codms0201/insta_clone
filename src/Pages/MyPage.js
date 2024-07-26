@@ -19,6 +19,7 @@ import dm from '../Assets/Imgs/dm.svg';
 import save from '../Assets/Imgs/save.svg';
 
 import { postWritingAPI } from '../API/AxiosAPI';
+import { uploadToS3 } from "../API/AwsS3";
 
 function MyPage() {
   const navigate = useNavigate();
@@ -33,9 +34,10 @@ function MyPage() {
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [uploadResult, setUploadResult] = useState(null);
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
     setFile(selectedFile);
     setImagePreview(URL.createObjectURL(selectedFile));
   };
@@ -51,17 +53,24 @@ function MyPage() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('content', content);
-    formData.append('imgUrl', file);
-
-    console.log(content);
-    console.log(file);
-
     setLoading(true);
     try {
+      const result = await uploadToS3(file, true);
+      setUploadResult(result);
+      alert("파일 업로드 성공!");
+      const fileUrl = result.imageUrl;
+
+
+      const formData = new FormData();
+      formData.append('content', content);
+      formData.append('imgUrl', fileUrl);
+
+      console.log(content);
+      console.log(fileUrl);
+
       await postWritingAPI(formData);
       alert('Post created successfully!');
+
       setWriteModalOpen(false); // Close the modal after successful submission
       setFile(null);
       setContent('');

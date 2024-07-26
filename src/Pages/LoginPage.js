@@ -5,7 +5,7 @@ import logo from '../Assets/Imgs/logo.svg';
 import { UserData, LoginState } from '../Atom';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { loginAPI } from '../API/LoginAPI';
-import LoginBtn from '../Components/LoginBtn';
+import GoogleAuthLogin from '../Components/LoginBtn';
 
 function LoginPage() {
   const [loginCheck, setLoginCheck] = useState(false);
@@ -21,28 +21,6 @@ function LoginPage() {
     setPasswordVisible(!passwordVisible);
   };
 
-  const handleLocalLogin = async (email, password) => {
-    try {
-        const response = await loginAPI(email, password);
-        // localStorage.setItem("token", response); // 로컬 스토리지에 토큰 저장
-        // console.log(localStorage.getItem("token"));
-
-        // server login 결과
-        console.log(response);
-        if (response) {
-            setLoginCheck(false);
-            setIsLoggedIn(true);
-            setUserData(response);
-            console.log(userData);
-            //navigate(`../main/${response.user_id}`);
-            navigate('/home');
-        } else {
-            setLoginCheck(true);
-        }
-    } catch (err) {
-        console.log(err);
-    }
-};
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -57,11 +35,6 @@ function LoginPage() {
     };
   }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    handleLocalLogin(email, password);
-  };
-
   return (
     <Wrapper>
       <GlobalStyle />
@@ -69,7 +42,7 @@ function LoginPage() {
         <Logo>
           <img src={logo} alt="instagram logo" />
         </Logo>
-        <form onSubmit={handleLocalLogin}>
+        {/*<form onSubmit={handleLocalLogin}>
           <WriteContainer>
             <Input
               placeholder="이메일"
@@ -88,11 +61,12 @@ function LoginPage() {
               {passwordVisible ? '숨기기' : '비밀번호 보기'}
             </PasswordToggle>
           </WriteContainer2>
-          {/* <LoginBtn type="submit">
+           <LoginBtn type="submit">
             로그인
-          </LoginBtn> */}
-          <LoginBtn/>
-        </form>
+          </LoginBtn>
+          <GoogleAuthLogin/>
+        </form>*/}
+        <GoogleAuthLogin/>
       </Container1>
       <Container2>
         <C2_1>계정이 없으신가요?</C2_1>
@@ -135,7 +109,7 @@ const Wrapper = styled.div`
 
 const Container1 = styled.div`
   width: 349px;
-  height: 302px;
+  height: 180px;
   flex-shrink: 0;
   border: 1px solid #EAEAEA;
   margin-bottom: 10px;
