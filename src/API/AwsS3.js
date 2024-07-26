@@ -47,6 +47,7 @@ const deleteFilesInS3 = async (fileKeys) => {
     throw error;
   }
 };
+//파일 삭제시 사용할 것
 
 export { uploadToS3, deleteFilesInS3 };
 
