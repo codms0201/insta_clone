@@ -10,6 +10,13 @@ import P_img from '../Assets/Imgs/우유10.jpeg';
 import P1 from '../Assets/Imgs/망곰이1.png';
 import P2 from '../Assets/Imgs/망곰이2.png';
 import P3 from '../Assets/Imgs/망곰이3.png';
+import f_heart from '../Assets/Imgs/fullheart.svg';
+import f_chet from '../Assets/Imgs/fullchet.svg';
+import b_heart from '../Assets/Imgs/blankheart.svg';
+import r_heart from '../Assets/Imgs/red.svg';
+import comment from '../Assets/Imgs/comment.svg';
+import dm from '../Assets/Imgs/dm.svg';
+import save from '../Assets/Imgs/save.svg';
 
 import { postWritingAPI } from '../API/AxiosAPI';
 
@@ -19,6 +26,7 @@ function MyPage() {
   const [writeModalOpen, setWriteModalOpen] = useState(false);
   const [currentPostIndex, setCurrentPostIndex] = useState(0);
   const [comments, setComments] = useState([[], [], []]);
+  const [isHeartLiked, setIsHeartLiked] = useState(false);
 
   const [file, setFile] = useState(null);
   const [content, setContent] = useState('');
@@ -101,6 +109,10 @@ function MyPage() {
     setComments(updatedComments);
   };
 
+  const toggleHeart = () => {
+    setIsHeartLiked(!isHeartLiked);
+  };
+
   return (
     <div>
       <GlobalStyle />
@@ -142,6 +154,16 @@ function MyPage() {
           {posts.map((post, index) => (
             <Post key={index} onClick={() => openPostModal(index)}>
               <img src={post.src} alt={`Post ${index + 1}`} />
+              <Overlay>
+                <HeartCount>
+                  <img src={f_heart} alt="full heart count" style={{width: '28px', height:'28px'}} />
+                  110 만
+                </HeartCount>
+                <ChetCount>
+                  <img src={f_chet} alt="full chet count" style={{width: '28px', height:'28px'}} />
+                  110 만
+                </ChetCount>
+              </Overlay>
             </Post>
           ))}
         </Posts>
@@ -222,6 +244,20 @@ function MyPage() {
                   </P_Cont>
                 ))}
                 <Line4 />
+                <BottomContainer>
+                <BottomIcon onClick={toggleHeart}>
+                  <img src={isHeartLiked ? r_heart : b_heart} alt="heart icon" />
+                </BottomIcon>
+                <BottomIcon>
+                  <img src={comment} alt="comment icon" />
+                </BottomIcon>
+                <BottomIcon>
+                  <img src={dm} alt="dm icon" />
+                </BottomIcon>
+                <BottomIcon>
+                  <img src={save} alt="save icon" />
+                </BottomIcon>
+                </BottomContainer>
                 <Line5 />
                 <CommentForm onSubmit={(data) => addComment({ name: 'cheche', img: P_img, text: data.comment })} />
               </P_Modal_Content>
@@ -293,10 +329,12 @@ const FileInputWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 
   img {
     width: 450px;
     height: 450px;
+    object-fit: cover;
     border-radius: 0px 0px 0px 16px;
   }
 `;
@@ -345,7 +383,7 @@ const Container = styled.div`
 const Container2 = styled.div`
   width: calc(100vw - 251px);
   margin-left: 251px;
-  height: 100vh;
+  height: auto;
   background: #000;
   display: flex;
   align-items: flex-start;
@@ -507,6 +545,72 @@ const Post = styled.div`
     height: 100%;
     object-fit: cover;
   }
+
+  &:hover img {
+    opacity: 0.8;
+  }
+
+  &:hover div {
+    opacity: 1;
+  }
+`;
+
+const HeartCount = styled.div`
+  color: #FFF;
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+  margin-left: 28px;
+
+  img {
+    position: absolute;
+    top: 132px;
+    left: 64px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 1;
+  }
+`;
+
+const ChetCount = styled.div`
+  color: #FFF;
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+
+  img {
+    position: absolute;
+    top: 132px;
+    left: 154px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 1;
+  }
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+  background: rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 `;
 
 const Modal2 = styled.div`
@@ -665,4 +769,25 @@ const Comment = styled.div`
   margin-left: 8px;
   margin-top: 10px;
   text-align: left;
+`;
+
+const BottomContainer = styled.div`
+  display: flex;
+  margin-top: 30.8rem;
+  padding-left: 15px;
+  gap: 11px;
+  width: 500px;
+  height: 54px;
+
+  & > *:last-child {
+    margin-left: 326px;
+  }
+`;
+
+const BottomIcon = styled.div`
+  cursor: pointer;
+  img {
+    width: 28px;
+    height: 28px;
+  }
 `;
