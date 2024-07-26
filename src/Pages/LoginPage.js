@@ -1,13 +1,64 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 import logo from '../Assets/Imgs/logo.svg';
+import { UserData, LoginState } from '../Atom';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { loginAPI } from '../API/LoginAPI';
 
 function LoginPage() {
+  const [loginCheck, setLoginCheck] = useState(false);
+  const [ isLoggedIn, setIsLoggedIn ] = useRecoilState(LoginState);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const navigate = useNavigate();
+  const [userData, setUserData] = useRecoilState(UserData);
+  const useData = useRecoilValue(UserData);
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
+  };
+
+  const handleLocalLogin = async (email, password) => {
+    try {
+        const response = await loginAPI(email, password);
+        // localStorage.setItem("token", response); // 로컬 스토리지에 토큰 저장
+        // console.log(localStorage.getItem("token"));
+
+        // server login 결과
+        console.log(response);
+        if (response) {
+            setLoginCheck(false);
+            setIsLoggedIn(true);
+            setUserData(response);
+            console.log(userData);
+            //navigate(`../main/${response.user_id}`);
+            navigate('/home');
+        } else {
+            setLoginCheck(true);
+        }
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = ''; // Chrome requires returnValue to be set.
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleLocalLogin(email, password);
   };
 
   return (
@@ -17,26 +68,29 @@ function LoginPage() {
         <Logo>
           <img src={logo} alt="instagram logo" />
         </Logo>
-        <WriteContainer>
-          <Input placeholder="전화번호, 사용자 이름 또는 이메일" />
-        </WriteContainer>
-        <WriteContainer2>
-          <Input
-            placeholder="비밀번호"
-            type={passwordVisible ? 'text' : 'password'}
-          />
-          <PasswordToggle onClick={togglePasswordVisibility}>
-            {passwordVisible ? '숨기기' : '비밀번호 보기'}
-          </PasswordToggle>
-        </WriteContainer2>
-        <LoginBtn>
-          로그인
-        </LoginBtn>
-        <OrContainer>
-          <Line />
-          <OrText>또는</OrText>
-          <Line />
-        </OrContainer>
+        <form onSubmit={handleLocalLogin}>
+          <WriteContainer>
+            <Input
+              placeholder="이메일"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </WriteContainer>
+          <WriteContainer2>
+            <Input
+              placeholder="비밀번호"
+              type={passwordVisible ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <PasswordToggle onClick={togglePasswordVisibility}>
+              {passwordVisible ? '숨기기' : '비밀번호 보기'}
+            </PasswordToggle>
+          </WriteContainer2>
+          <LoginBtn type="submit">
+            로그인
+          </LoginBtn>
+        </form>
       </Container1>
       <Container2>
         <C2_1>계정이 없으신가요?</C2_1>
@@ -79,7 +133,7 @@ const Wrapper = styled.div`
 
 const Container1 = styled.div`
   width: 349px;
-  height: 411px;
+  height: 302px;
   flex-shrink: 0;
   border: 1px solid #EAEAEA;
   margin-bottom: 10px;

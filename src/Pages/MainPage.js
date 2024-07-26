@@ -1,11 +1,28 @@
+import React, { useState } from 'react';
 import styled, { createGlobalStyle } from "styled-components";
+import { useNavigate } from "react-router-dom";
+import b_heart from '../Assets/Imgs/blankheart.svg';
+import r_heart from '../Assets/Imgs/red.svg';
+import comment from '../Assets/Imgs/comment.svg';
+import dm from '../Assets/Imgs/dm.svg';
+import save from '../Assets/Imgs/save.svg';
 import Menu from '../Components/Menu';
-
+import dot from '../Assets/Imgs/점점점.svg';
+import P1 from '../Assets/Imgs/망곰이1.png';
+import P_img from '../Assets/Imgs/우유10.jpeg';
 
 function MainPage() {
-  
+  const navigate = useNavigate();
+  const [isHeartLiked, setIsHeartLiked] = useState(false);
+  const toggleHeart = () => {
+    setIsHeartLiked(!isHeartLiked);
+  };
 
-  return(
+  const goToMyPage = () => {
+    navigate(`../mypage`);
+  };
+
+  return (
     <div>
       <GlobalStyle />
       <Container>
@@ -15,9 +32,86 @@ function MainPage() {
       </Container>
       <Line1 />
       <Container2>
-        <PostContainer>
-          
-        </PostContainer>
+        <CenteredWrapper>
+          <PostContainer>
+            <Header>
+              <Ppp onClick={goToMyPage}>
+                <ProfileImage src={P_img} alt="Profile img" />
+              </Ppp>
+              <Name onClick={goToMyPage}>
+                cheche
+              </Name>
+              <Btn>
+                <img src={dot} alt="점점점" />
+              </Btn>
+            </Header>
+            <PostImg>
+              <img src={P1} alt="post img" />
+            </PostImg>
+            <BottomContainer>
+              <BottomIcon onClick={toggleHeart}>
+                <img src={isHeartLiked ? r_heart : b_heart} alt="heart icon" />
+              </BottomIcon>
+              <BottomIcon>
+                <img src={comment} alt="comment icon" />
+              </BottomIcon>
+              <BottomIcon>
+                <img src={dm} alt="dm icon" />
+              </BottomIcon>
+              <BottomIcon>
+                <img src={save} alt="save icon" />
+              </BottomIcon>
+            </BottomContainer>
+            <PostContent>
+              좋아요 41.5만개
+              <br />
+              nct 내용오오오옹
+              <br />
+              <p>댓글 5639개 모두 보기</p>
+            </PostContent>
+            <Line2 />
+          </PostContainer>
+          {/* 추가적인 포스트를 위한 반복 */}
+          <PostContainer>
+            <Header>
+              <Ppp onClick={goToMyPage}>
+                <ProfileImage src={P_img} alt="Profile img" />
+              </Ppp>
+              <Name onClick={goToMyPage}>
+                cheche
+              </Name>
+              <Btn>
+                <img src={dot} alt="점점점" />
+              </Btn>
+            </Header>
+            <PostImg>
+              <img src={P1} alt="post img" />
+            </PostImg>
+            <BottomContainer>
+              <BottomIcon onClick={toggleHeart}>
+                <img src={isHeartLiked ? r_heart : b_heart} alt="heart icon" />
+              </BottomIcon>
+              <BottomIcon>
+                <img src={comment} alt="comment icon" />
+              </BottomIcon>
+              <BottomIcon>
+                <img src={dm} alt="dm icon" />
+              </BottomIcon>
+              <BottomIcon>
+                <img src={save} alt="save icon" />
+              </BottomIcon>
+            </BottomContainer>
+            <PostContent>
+              좋아요 41.5만개
+              <br />
+              nct 내용오오오옹
+              <br />
+              <p>댓글 5639개 모두 보기</p>
+            </PostContent>
+            <Line2 />
+          </PostContainer>
+          {/* 여기에 추가 포스트를 반복해서 추가하세요 */}
+        </CenteredWrapper>
       </Container2>
     </div>
   );
@@ -39,6 +133,51 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
+const ProfileImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const Name = styled.div`
+  margin-left: 11px;
+  margin-top: 8px;
+  color: #FFF;
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  z-index: 2;
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const Ppp = styled.div`
+  width: 37px;
+  height: 37px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 2;
+
+  &:hover{
+    cursor: pointer;
+  }
+`;
+
+const Btn = styled.div`
+  width: 22px;
+  height: 22px;
+  margin-top: 6px;
+  margin-left: auto;
+  z-index: 2;
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
 const Container = styled.div`
   width: 250px;
   height: 100vh;
@@ -46,33 +185,109 @@ const Container = styled.div`
   top: 0;
   left: 0;
   background: #000;
-`
+`;
 
 const Container2 = styled.div`
-  width: calc(100vw - 251px);
-  margin-left: 251px;
-  height: 100vh;
+  margin-left: 250px;
+  height: auto;
+  overflow-y: auto;
   background: #000;
-`
+  z-index: 1;
+`;
 
-const PostContainer=styled.div`
+const CenteredWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding-top: 100px;
+`;
+
+const PostContainer = styled.div`
   width: 474px;
   height: auto;
-`
+  margin-bottom: 20px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  width: 474px;
+  height: 60px;
+`;
+
+const PostImg = styled.div`
+  width: 474px;
+  height: 590px;
+  overflow: hidden;
+  border-radius: 4px; 
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const BottomContainer = styled.div`
+  display: flex;
+  margin-top: 10px;
+  gap: 11px;
+  width: 474px;
+  height: 46px;
+
+  & > *:last-child {
+    margin-left: auto;
+  }
+`;
+
+const BottomIcon = styled.div`
+  z-index: 2;
+  cursor: pointer;
+  img {
+    width: 28px;
+    height: 28px;
+  }
+`;
+
+const PostContent = styled.div`
+  flex-direction: column;
+  width: 474px;
+  height: auto;
+  color: #FFF;
+  font-family: Inter;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.8;
+
+  p {
+    color: #A0A0A0;
+    font-family: Inter;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+  }
+`;
+
+const Line2 = styled.div`
+  width: 474px;
+  height: 1px;
+  background: #262626;
+  margin-top: 10px;
+`;
 
 const MenuWrapper = styled.div`
   position: fixed;
-  width: calc(100% - 60px);
+  width: 100%;
   height: 100vh;
   padding: 50px 30px;
-  z-index: 10;
-`
+`;
 
 const Line1 = styled.div`
   width: 1px;
-  height: 832px;
-  flex-shrink: 0;
+  height: 100vh;
   position: fixed;
   left: 250px;
   background: #262626;
-`
+`;

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 import logo from '../Assets/Imgs/logo.svg';
+import { postMemberAPI } from '../API/RegisterAPI';
 
 function SignUpPage() {
   const [phoneOrEmail, setPhoneOrEmail] = useState('');
@@ -9,6 +10,7 @@ function SignUpPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (phoneOrEmail && fullName && username && password) {
@@ -17,6 +19,30 @@ function SignUpPage() {
       setIsButtonDisabled(true);
     }
   }, [phoneOrEmail, fullName, username, password]);
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    const newData = {
+      email: phoneOrEmail,
+      name: fullName,
+      nickname: username,
+      password: password,
+    };
+
+    try {
+      const response = await postMemberAPI(newData);
+      if (response.success === false) {
+        alert("이미 사용 중인 이메일입니다.");
+      } else {
+        alert("가입 성공! 로그인 페이지로 이동합니다.");
+        navigate('/');
+      }
+    } catch (error) {
+      console.error("Registration failed:", error);
+      alert("가입 실패. 다시 시도하세요.");
+    }
+  };
 
   return (
     <Wrapper>
@@ -28,50 +54,44 @@ function SignUpPage() {
         <W_msg>
           친구들의 사진과 동영상을 보려면 가입하세요.
         </W_msg>
-        <GoggleBtn>
-          구글 로그인
-        </GoggleBtn>
-        <OrContainer>
-          <Line />
-          <OrText>또는</OrText>
-          <Line />
-        </OrContainer>
-        <WriteContainer>
-          <Input 
-            placeholder="휴대폰 번호 또는 이메일 주소" 
-            value={phoneOrEmail} 
-            onChange={(e) => setPhoneOrEmail(e.target.value)} 
-          />
-        </WriteContainer>
-        <WriteContainer2>
-          <Input 
-            placeholder="성명" 
-            value={fullName} 
-            onChange={(e) => setFullName(e.target.value)} 
-          />
-        </WriteContainer2>
-        <WriteContainer2>
-          <Input 
-            placeholder="사용자 이름" 
-            value={username} 
-            onChange={(e) => setUsername(e.target.value)} 
-          />
-        </WriteContainer2>
-        <WriteContainer2>
-          <Input 
-            placeholder="비밀번호" 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-          />
-        </WriteContainer2>
-        <WarnMsg>
-          저희 서비스를 이용하는 사람이 회원님의 연락처 정보를<br />
-          Instargram에 업로드했을 수도 있습니다. <LearnMore>더 알아보기</LearnMore>
-        </WarnMsg>
-        <SignBtn disabled={isButtonDisabled}>
-          가입
-        </SignBtn>
+        <form onSubmit={handleRegister}>
+          <WriteContainer>
+            <Input 
+              placeholder="휴대폰 번호 또는 이메일 주소" 
+              value={phoneOrEmail} 
+              onChange={(e) => setPhoneOrEmail(e.target.value)} 
+            />
+          </WriteContainer>
+          <WriteContainer2>
+            <Input 
+              placeholder="성명" 
+              value={fullName} 
+              onChange={(e) => setFullName(e.target.value)} 
+            />
+          </WriteContainer2>
+          <WriteContainer2>
+            <Input 
+              placeholder="사용자 이름" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)} 
+            />
+          </WriteContainer2>
+          <WriteContainer2>
+            <Input 
+              placeholder="비밀번호" 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+            />
+          </WriteContainer2>
+          <WarnMsg>
+            저희 서비스를 이용하는 사람이 회원님의 연락처 정보를<br />
+            Instargram에 업로드했을 수도 있습니다. <LearnMore>더 알아보기</LearnMore>
+          </WarnMsg>
+          <SignBtn type="submit" disabled={isButtonDisabled}>
+            가입
+          </SignBtn>
+        </form>
       </Container1>
       <Container2>
         <C2_1>계정이 있으신가요?</C2_1>
@@ -114,7 +134,7 @@ const Wrapper = styled.div`
 
 const Container1 = styled.div`
   width: 349px;
-  height: 559px;
+  height: 460px;
   flex-shrink: 0;
   border: 1px solid #EAEAEA;
   margin-bottom: 10px;
@@ -132,24 +152,6 @@ const W_msg = styled.div`
   font-style: normal;
   font-weight: 900;
   line-height: normal;
-`;
-
-const GoggleBtn = styled.button`
-  width: 268px;
-  height: 32px;
-  margin-top: 31px;
-  flex-shrink: 0;
-  border: none;
-  border-radius: 8px;
-  background: #3C98FF;
-
-  color: #FFF;
-  font-family: Inter;
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 900;
-  line-height: normal;
-  cursor: pointer;
 `;
 
 const Logo = styled.div`
@@ -223,6 +225,7 @@ const WarnMsg = styled.div`
   font-style: normal;
   font-weight: 500;
   line-height: normal;
+  text-align: center; /* Center align text */
 `;
 
 const LearnMore = styled.span`
@@ -251,32 +254,6 @@ const SignBtn = styled.button`
     color: #FEFFFF;
     cursor: not-allowed;
   }
-`;
-
-const OrContainer = styled.div`
-  display: flex;
-  align-items: center;
-  width: 268px;
-  height: 20px;
-  margin-top: 19px;
-  gap: 18px;
-
-  color: #727272;
-  font-family: Inter;
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: normal;
-`;
-
-const Line = styled.div`
-  flex-grow: 1;
-  height: 1px;
-  background: #EAEAEA;
-`;
-
-const OrText = styled.div`
-  padding: 0 10px;
 `;
 
 const Container2 = styled.div`

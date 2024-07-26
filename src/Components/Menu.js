@@ -9,12 +9,18 @@ import dm from '../Assets/Imgs/dm.svg';
 import alert from '../Assets/Imgs/alert.svg';
 import profile from '../Assets/Imgs/profile.svg';
 import menubar from '../Assets/Imgs/menubar.svg';
+import AuthService from '../API/AuthService';
 
 function Menu({ onActiveChange }) {
   const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isMakeModalOpen, setMakeModalOpen] = useState(false);
   const [isActive, setIsActive] = useState(false);
+
+  const handleLogout = () => {
+    AuthService.logout();
+    window.location.reload();
+};
 
   const goToMain = () => {
     navigate(`../main`);
@@ -91,7 +97,7 @@ function Menu({ onActiveChange }) {
                   <ToggleSlider />
                 </ToggleSwitch>
               </Button2>
-              <Button2>
+              <Button2 onClick={handleLogout}>
                 로그아웃
               </Button2>
             </ModalContent>
@@ -115,6 +121,7 @@ const Div = styled.div`
   display: inline-flex;
   width: 220px;
 `;
+
 const Container = styled.div`
   width: 195px;
   height: auto;
@@ -132,11 +139,11 @@ const Logo = styled.div`
 `;
 
 const Button = styled.button`
-  width: 195px;
+  width: 90px;
   height: 42px;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 10px;
   border-radius: 8px;
   border: none;
   background-color: #000;
@@ -148,16 +155,24 @@ const Button = styled.button`
   font-style: normal;
   font-weight: 500;
   line-height: normal;
+  justify-content: flex-start;
   &:hover {
     background-color: #161616;
     cursor: pointer;
+  }
+  & img {
+    width: 20px;
+    height: 20px;
+  }
+  & p {
+    margin: 0;
   }
 `;
 
 const Button2 = styled.button`
   width: 100%;
   height: 42px;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 15px;
   border-radius: 8px;
@@ -171,18 +186,22 @@ const Button2 = styled.button`
   font-style: normal;
   font-weight: 500;
   line-height: normal;
-  text-align: left;
+  text-align: left; 
+  justify-content: flex-start;
   &:hover {
     background-color: #606060;
     cursor: pointer;
+  }
+  & p {
+    margin: 0;
   }
 `;
 
 const M_Button = styled.button`
   width: 195px;
   height: 42px;
-  margin-top: 300px;
-  display: inline-flex;
+  margin-top: 30px;
+  display: flex;
   align-items: center;
   gap: 15px;
   border-radius: 8px;
@@ -196,9 +215,13 @@ const M_Button = styled.button`
   font-style: normal;
   font-weight: 500;
   line-height: normal;
+  justify-content: flex-start;
   &:hover {
     background-color: #161616;
     cursor: pointer;
+  }
+  & p {
+    margin: 0;
   }
 `;
 
@@ -212,7 +235,6 @@ const Modal = styled.div`
   justify-content: flex-start;
   align-items: flex-end;
   background: rgba(0, 0, 0, 0);
-  z-index: 1000;
 `;
 
 const ModalContent = styled.div`
@@ -292,7 +314,6 @@ const NewModal = styled.div`
   justify-content: center;
   align-items: center;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
 `;
 
 const NewModalContent = styled.div`
@@ -304,5 +325,4 @@ const NewModalContent = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1001;
 `;

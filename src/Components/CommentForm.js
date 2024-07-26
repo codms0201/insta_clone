@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 
 const CommentForm = ({ onSubmit }) => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const [isWriting, setIsWriting] = useState(false);
 
   const submitHandler = (data) => {
     onSubmit(data);
     reset();
+    setIsWriting(false); // Reset writing state after submit
+  };
+
+  const handleInputChange = (e) => {
+    setIsWriting(e.target.value.length > 0);
   };
 
   return (
@@ -18,10 +24,11 @@ const CommentForm = ({ onSubmit }) => {
           id="comment" 
           {...register('comment', { required: 'Comment is required' })}
           placeholder="댓글 달기..."
+          onChange={handleInputChange}
         />
         {errors.comment && <ErrorMessage>{errors.comment.message}</ErrorMessage>}
       </FormGroup>
-      <SubmitButton type="submit">게시</SubmitButton>
+      <SubmitButton type="submit" isWriting={isWriting}>게시</SubmitButton>
     </StyledForm>
   );
 };
@@ -71,7 +78,7 @@ const SubmitButton = styled.button`
   font-size: 16px;
   border: none;
   background-color: #000;
-  color: #5A6E80;
+  color: ${({ isWriting }) => (isWriting ? '#3C98FF' : '#5A6E80')};
   font-family: Inter;
   font-size: 13px;
   font-style: normal;
