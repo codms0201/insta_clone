@@ -20,6 +20,8 @@ import save from '../Assets/Imgs/save.svg';
 
 import { postWritingAPI } from '../API/AxiosAPI';
 import { uploadToS3 } from "../API/AwsS3";
+import { userState } from "../Atom";
+import { useRecoilValue } from 'recoil';
 
 function MyPage() {
   const navigate = useNavigate();
@@ -28,6 +30,7 @@ function MyPage() {
   const [currentPostIndex, setCurrentPostIndex] = useState(0);
   const [comments, setComments] = useState([[], [], []]);
   const [isHeartLiked, setIsHeartLiked] = useState(false);
+  const userInfo = useRecoilValue(userState);
 
   const [file, setFile] = useState(null);
   const [content, setContent] = useState('');
@@ -46,41 +49,44 @@ function MyPage() {
     setContent(e.target.value);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!file || !content) {
-      alert('Both image and content are required.');
-      return;
-    }
+/////
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!file || !content) {
+    alert('Both image and content are required.');
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const result = await uploadToS3(file, true);
-      setUploadResult(result);
-      alert("파일 업로드 성공!");
-      const fileUrl = result.imageUrl;
+  setLoading(true);
+  try {
+    const result = await uploadToS3(file, true);
+    setUploadResult(result);
+    alert("파일 업로드 성공!");
+    const fileUrl = result.imageUrl;
 
+    const data = {
+      memberId: userInfo.memberId,
+      content: content,
+      imgUrl: fileUrl
+    };
 
-      const formData = new FormData();
-      formData.append('content', content);
-      formData.append('imgUrl', fileUrl);
+    console.log(data);
 
-      console.log(content);
-      console.log(fileUrl);
+    await postWritingAPI(data); 
+    alert('Post created successfully!');
 
-      await postWritingAPI(formData);
-      alert('Post created successfully!');
+    setWriteModalOpen(false); 
+    setFile(null);
+    setContent('');
+    setImagePreview(null); 
+  } catch (err) {
+    setError('Failed to create post.');
+  } finally {
+    setLoading(false);
+  }
+};
 
-      setWriteModalOpen(false); // Close the modal after successful submission
-      setFile(null);
-      setContent('');
-      setImagePreview(null); // Clear the state
-    } catch (err) {
-      setError('Failed to create post.');
-    } finally {
-      setLoading(false);
-    }
-  };
+////
 
   const posts = [
     { src: P1, description: "Post 1 description" },

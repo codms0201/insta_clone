@@ -29,7 +29,8 @@ export const postUserAPI = async (data) => {
 //게시물 작성 포스트
 export const postWritingAPI = async (data) => {
     try {
-      const response = await axiosInstance.post(`${server}/api/boards/create`, data);
+      const config = {"Content-Type": 'application/json'};
+      const response = await axiosInstance.post(`${server}/api/boards/create`, data, config);
       console.log(response.data);
       return response;
     } catch (err) {
