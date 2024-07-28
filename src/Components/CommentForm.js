@@ -1,15 +1,30 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
+import { postCommentAPI } from '../API/AxiosAPI'; // Import the postCommentAPI
+import { userState } from "../Atom";
+import { useRecoilValue } from 'recoil';
 
-const CommentForm = ({ onSubmit }) => {
+const CommentForm = ({ boardId, memberId, onCommentSubmit }) => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
   const [isWriting, setIsWriting] = useState(false);
+  const userInfo = useRecoilValue(userState);
 
-  const submitHandler = (data) => {
-    onSubmit(data);
-    reset();
-    setIsWriting(false); // Reset writing state after submit
+  const submitHandler = async (data) => {
+    try {
+      const commentData = { 
+        boardId: boardId, 
+        content: data.comment, 
+        memberId: memberId 
+      };
+      console.log(commentData);
+      const response = await postCommentAPI(commentData);
+      onCommentSubmit(response.data); // Add the new comment to the parent state
+      reset();
+      setIsWriting(false); // Reset writing state after submit
+    } catch (err) {
+      console.error('Error posting comment:', err);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -20,8 +35,8 @@ const CommentForm = ({ onSubmit }) => {
     <StyledForm onSubmit={handleSubmit(submitHandler)}>
       <FormGroup>
         <label htmlFor="comment">Comment</label>
-        <StyledTextarea 
-          id="comment" 
+        <StyledTextarea
+          id="comment"
           {...register('comment', { required: 'Comment is required' })}
           placeholder="댓글 달기..."
           onChange={handleInputChange}
@@ -55,7 +70,6 @@ const StyledTextarea = styled.textarea`
   border: none;
   background-color: #000;
   resize: none;
-
   color: #979797;
   font-family: Inter;
   font-size: 13px;

@@ -5,29 +5,23 @@ import logo from '../Assets/Imgs/logo.svg';
 import { postMemberAPI } from '../API/RegisterAPI';
 
 function SignUpPage() {
-  const [phoneOrEmail, setPhoneOrEmail] = useState('');
-  const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (phoneOrEmail && fullName && username && password) {
+    if (username) {
       setIsButtonDisabled(false);
     } else {
       setIsButtonDisabled(true);
     }
-  }, [phoneOrEmail, fullName, username, password]);
+  }, [username]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
     const newData = {
-      email: phoneOrEmail,
-      name: fullName,
       nickname: username,
-      password: password,
     };
 
     try {
@@ -55,33 +49,11 @@ function SignUpPage() {
           친구들의 사진과 동영상을 보려면 가입하세요.
         </W_msg>
         <form onSubmit={handleRegister}>
-          <WriteContainer>
-            <Input 
-              placeholder="휴대폰 번호 또는 이메일 주소" 
-              value={phoneOrEmail} 
-              onChange={(e) => setPhoneOrEmail(e.target.value)} 
-            />
-          </WriteContainer>
-          <WriteContainer2>
-            <Input 
-              placeholder="성명" 
-              value={fullName} 
-              onChange={(e) => setFullName(e.target.value)} 
-            />
-          </WriteContainer2>
           <WriteContainer2>
             <Input 
               placeholder="사용자 이름" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
-            />
-          </WriteContainer2>
-          <WriteContainer2>
-            <Input 
-              placeholder="비밀번호" 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
             />
           </WriteContainer2>
           <WarnMsg>
@@ -134,7 +106,7 @@ const Wrapper = styled.div`
 
 const Container1 = styled.div`
   width: 349px;
-  height: 460px;
+  height: 340px;
   flex-shrink: 0;
   border: 1px solid #EAEAEA;
   margin-bottom: 10px;
@@ -167,16 +139,6 @@ const Logo = styled.div`
   }
 `;
 
-const WriteContainer = styled.div`
-  width: 268px;
-  height: 37px;
-  flex-shrink: 0;
-  border-radius: 2px;
-  border: 1px solid #EAEAEA;
-  position: relative;
-  margin-top: 16px;
-`;
-
 const WriteContainer2 = styled.div`
   width: 268px;
   height: 37px;
@@ -184,7 +146,8 @@ const WriteContainer2 = styled.div`
   border-radius: 2px;
   border: 1px solid #EAEAEA;
   position: relative;
-  margin-top: 8px;
+  margin-top: 28px;
+  margin-bottom: 30px;
   display: flex;
   align-items: center;
 `;

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled, { createGlobalStyle } from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 import Menu from '../Components/Menu';
-import Dot from '../Components/EditDeleteBtn';
 import CommentForm from '../Components/CommentForm';
 import P_img from '../Assets/Imgs/우유10.jpeg';
 import f_heart from '../Assets/Imgs/fullheart.svg';
@@ -15,42 +14,45 @@ import comment from '../Assets/Imgs/comment.svg';
 import dm from '../Assets/Imgs/dm.svg';
 import save from '../Assets/Imgs/save.svg';
 
-import { postWritingAPI, getUserPostAPI } from '../API/AxiosAPI';
-import { uploadToS3 } from "../API/AwsS3";
-import { userState } from "../Atom";
+import { getUserPostAPI , getUserAPI } from '../API/AxiosAPI';
 import { useRecoilValue } from 'recoil';
+import { userState } from "../Atom";
 
-function MyPage() {
+function OtherPage() {
   const navigate = useNavigate();
+  const { userId, postId } = useParams(); // URL에서 userId와 postId를 가져옵니다.
   const [postModalOpen, setPostModalOpen] = useState(false);
-  const [writeModalOpen, setWriteModalOpen] = useState(false);
   const [currentPostIndex, setCurrentPostIndex] = useState(0);
   const [comments, setComments] = useState([]);
   const [isHeartLiked, setIsHeartLiked] = useState(false);
   const userInfo = useRecoilValue(userState);
   const [posts, setPosts] = useState([]); // 배열로 초기화
+  const [users, setUsers] = useState({});
 
-  const [file, setFile] = useState(null);
-  const [content, setContent] = useState('');
-  const [imagePreview, setImagePreview] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [uploadResult, setUploadResult] = useState(null);
+  console.log(userId, postId);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const userIds = [...new Set(posts.map(post => post.userId))]; // Get unique userIds
+      const userPromises = userIds.map(userId => getUserAPI(userId));
+      const userResponses = await Promise.all(userPromises);
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    setFile(selectedFile);
-    setImagePreview(URL.createObjectURL(selectedFile));
-  };
+      const usersData = userResponses.reduce((acc, response) => {
+        acc[response.id] = response;
+        return acc;
+      }, {});
 
-  const handleContentChange = (e) => {
-    setContent(e.target.value);
-  };
+      setUsers(usersData);
+    };
+
+    if (posts.length > 0) {
+      fetchUsers();
+    }
+  }, [posts]);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchUserAndPosts = async () => {
       try {
-        const data = await getUserPostAPI(userInfo.memberId);
+        const data = await getUserPostAPI(userId);
         console.log(data);
         if (Array.isArray(data)) {
           setPosts(data.reverse()); // 게시물 순서를 역순으로 설정
@@ -67,44 +69,18 @@ function MyPage() {
       }
     };
 
-    fetchPosts();
-  }, [userInfo.memberId]);
+    fetchUserAndPosts();
+  }, [userId]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!file || !content) {
-      alert('이미지와 내용을 모두 입력해야 합니다.');
-      return;
+  useEffect(() => {
+    if (posts.length > 0) {
+      const postIndex = posts.findIndex(post => post.id === Number(postId));
+      if (postIndex !== -1) {
+        setCurrentPostIndex(postIndex);
+        setPostModalOpen(true);
+      }
     }
-
-    setLoading(true);
-    try {
-      const result = await uploadToS3(file, true);
-      setUploadResult(result);
-      alert("파일 업로드 성공!");
-      const fileUrl = result.imageUrl;
-
-      const data = {
-        memberId: userInfo.memberId,
-        content: content,
-        imgUrl: fileUrl
-      };
-
-      console.log(data);
-
-      await postWritingAPI(data); 
-      alert('게시물 생성 성공!');
-      window.location.reload(); // 페이지 새로고침
-    } catch (err) {
-      setError('게시물 생성 실패.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const goToProfileEdit = () => {
-    navigate(`../profileEdit`);
-  };
+  }, [posts, postId]);
 
   const openPostModal = (index) => {
     setCurrentPostIndex(index);
@@ -113,17 +89,6 @@ function MyPage() {
 
   const closePostModal = () => {
     setPostModalOpen(false);
-  };
-
-  const openWriteModal = () => {
-    setWriteModalOpen(true);
-  };
-
-  const closeWriteModal = () => {
-    setWriteModalOpen(false);
-    setFile(null);
-    setContent('');
-    setImagePreview(null); // 상태 초기화
   };
 
   const addComment = (newComment) => {
@@ -136,11 +101,6 @@ function MyPage() {
 
   const toggleHeart = () => {
     setIsHeartLiked(!isHeartLiked);
-  };
-
-  const handlePostDeleted = (postId) => {
-    setPosts(posts.filter(post => post.id !== postId));
-    setPostModalOpen(false); // 모달 닫기
   };
 
   return (
@@ -160,14 +120,7 @@ function MyPage() {
             </Profile>
             <ProfileInfo>
               <NickName>
-                {userInfo.name}
-                
-                <P_btn onClick={goToProfileEdit}>
-                  프로필 편집
-                </P_btn>
-                <P_btn onClick={() => openWriteModal()}>
-                  만들기
-                </P_btn>
+                {users[userId]?.name}
               </NickName>
               <Followers>
                 <F1>게시물 0</F1>
@@ -198,49 +151,6 @@ function MyPage() {
             </Post>
           ))}
         </Posts>
-        {writeModalOpen && (
-          <Modal2>
-            <ModalOverlay2 onClick={closeWriteModal} />
-            <form onSubmit={handleSubmit}>
-            <ModalContent2>
-              <ModalHeader>
-                새 게시물 만들기
-                <ShareBtn type="submit" disabled={loading}>공유하기</ShareBtn>
-              </ModalHeader>
-              <ModalWriteContent>
-                <FileInputWrapper>
-                  <FileInput type="file" id="file" onChange={handleFileChange} />
-                  <FileInputLabel htmlFor="file">
-                    {imagePreview ? (
-                      <img src={imagePreview} alt="Selected" />
-                    ) : (
-                      "사진 업로드 하기!!"
-                    )}
-                  </FileInputLabel>
-                </FileInputWrapper>
-                <WriteContent>
-                <P_Modal_Profile2>
-                  <Ppp>
-                    <ProfileImage src={P_img} alt="Profile img" />
-                  </Ppp>
-                  <Name>
-                    cheche
-                  </Name>
-                </P_Modal_Profile2>
-                <Writtings>
-                  <TextArea 
-                    id="content" 
-                    value={content} 
-                    onChange={handleContentChange} 
-                    placeholder="문구를 입력하세요..."
-                  />
-                </Writtings>
-                </WriteContent>
-              </ModalWriteContent>
-            </ModalContent2>
-            </form>
-          </Modal2>
-        )}
         {postModalOpen && (
           <Modal>
             <ModalOverlay onClick={closePostModal} />
@@ -254,9 +164,8 @@ function MyPage() {
                     <ProfileImage src={P_img} alt="Profile img" />
                   </Ppp>
                   <Name>
-                    {userInfo.name}
+                    {users[userId]?.name}
                   </Name>
-                  <Dot postId={posts[currentPostIndex]?.id} onPostDeleted={handlePostDeleted} />
                 </P_Modal_Profile>
                 <Line3 />
                 <P_Modal_Profile1>
@@ -264,7 +173,7 @@ function MyPage() {
                     <ProfileImage src={P_img} alt="Profile img" />
                   </Ppp>
                   <Name>
-                    {userInfo.name}
+                    {users[userId]?.name}
                   </Name>
                   <Content>
                     {posts[currentPostIndex]?.content}
@@ -277,31 +186,31 @@ function MyPage() {
                         <ProfileImage src={comment.img} alt="Profile img" />
                       </Ppp>
                       <Name>
-                        {comment.name}
+                        {userInfo.name}
                       </Name>
                       <Comment>
-                        {comment.text}
+                        {comment.content}
                       </Comment>
                     </P_Modal_Profile>
                   </P_Cont>
                 ))}
                 <Line4 />
                 <BottomContainer>
-                <BottomIcon onClick={toggleHeart}>
-                  <img src={isHeartLiked ? r_heart : b_heart} alt="heart icon" />
-                </BottomIcon>
-                <BottomIcon>
-                  <img src={comment} alt="comment icon" />
-                </BottomIcon>
-                <BottomIcon>
-                  <img src={dm} alt="dm icon" />
-                </BottomIcon>
-                <BottomIcon>
-                  <img src={save} alt="save icon" />
-                </BottomIcon>
+                  <BottomIcon onClick={toggleHeart}>
+                    <img src={isHeartLiked ? r_heart : b_heart} alt="heart icon" />
+                  </BottomIcon>
+                  <BottomIcon>
+                    <img src={comment} alt="comment icon" />
+                  </BottomIcon>
+                  <BottomIcon>
+                    <img src={dm} alt="dm icon" />
+                  </BottomIcon>
+                  <BottomIcon>
+                    <img src={save} alt="save icon" />
+                  </BottomIcon>
                 </BottomContainer>
                 <Line5 />
-                <CommentForm onSubmit={(data) => addComment({ name: 'cheche', img: P_img, text: data.comment })} />
+                <CommentForm boardId={postId} memberId={userId} onCommentSubmit={addComment} />
               </P_Modal_Content>
             </ModalContent>
           </Modal>
@@ -311,7 +220,7 @@ function MyPage() {
   );
 }
 
-export default MyPage;
+export default OtherPage;
 
 const GlobalStyle = createGlobalStyle`
   body, html {
@@ -325,92 +234,6 @@ const GlobalStyle = createGlobalStyle`
   *, *::before, *::after {
     box-sizing: inherit;
   }
-`;
-
-const Writtings = styled.div`
-  margin-top: 20px;
-`;
-
-const ModalHeader = styled.div`
-  margin-left: 196px;
-  width: 900px;
-  height: 50px;
-  padding-top: 18px;
-  color: #FFF;
-  font-family: Inter;
-  font-size: 15px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: normal;
-`;
-
-const ShareBtn = styled.button`
-  width: 64px;
-  height: 20px;
-  margin-left: 332px;
-  border: none;
-  background-color: #262626;
-  color: #0095F6;
-  &:hover{
-    cursor: pointer;
-  }
-`;
-
-const ModalWriteContent = styled.div`
-  display: flex;
-  width: 900px;
-  height: 450px;
-`;
-
-const FileInputWrapper = styled.div`
-  width: 450px;
-  height: 450px;
-  flex-shrink: 0;
-  border-radius: 0px 0px 0px 16px;
-  background: #D9D9D9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-
-  img {
-    width: 450px;
-    height: 450px;
-    object-fit: cover;
-    border-radius: 0px 0px 0px 16px;
-  }
-`;
-
-const FileInput = styled.input`
-  display: none;
-`;
-
-const FileInputLabel = styled.label`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #D9D9D9;
-  border-radius: 0px 0px 0px 16px;
-  color: #000;
-  cursor: pointer;
-  text-align: center;
-`;
-
-const WriteContent = styled.div`
-  width: 450px;
-  height: 450px;
-`;
-
-const TextArea = styled.textarea`
-  width: 400px;
-  height: 160px;
-  background: #262626;
-  color: #FFF;
-  border: none;
-  resize: none;
-  padding: 10px;
-  font-family: Inter;
-  font-size: 14px;
 `;
 
 const Container = styled.div`
@@ -655,39 +478,6 @@ const Overlay = styled.div`
   transition: opacity 0.3s ease;
 `;
 
-const Modal2 = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalOverlay2 = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0);
-`;
-
-const ModalContent2 = styled.div`
-  flex-direction: column;
-  position: relative;
-  background: #262626;
-  border-radius: 16px;
-  text-align: center;
-  width: 900px;
-  height: 500px;
-  display: flex;
-`;
-
 const Modal = styled.div`
   position: fixed;
   top: 0;
@@ -758,11 +548,6 @@ const Content = styled.div`
   color: #FFF;
 `;
 
-const P_Modal_Profile2 = styled.div`
-  display: flex;
-  padding-top: 6px;
-`;
-
 const P_Modal_Profile1 = styled.div`
   display: flex;
   width: 800px;
@@ -818,7 +603,7 @@ const P_Cont = styled.div`
 const Comment = styled.div`
   color: #FFF;
   font-family: Inter;
-  font-size: 12px;
+  font-size: 16px;
   font-style: normal;
   font-weight: 500;
   line-height: normal;

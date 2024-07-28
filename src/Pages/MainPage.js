@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { createGlobalStyle } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import b_heart from '../Assets/Imgs/blankheart.svg';
@@ -8,19 +8,52 @@ import dm from '../Assets/Imgs/dm.svg';
 import save from '../Assets/Imgs/save.svg';
 import Menu from '../Components/Menu';
 import dot from '../Assets/Imgs/점점점.svg';
-import P1 from '../Assets/Imgs/망곰이1.png';
 import P_img from '../Assets/Imgs/우유10.jpeg';
+import { getPostAPI, getUserAPI } from '../API/AxiosAPI';
 
 function MainPage() {
   const navigate = useNavigate();
   const [isHeartLiked, setIsHeartLiked] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState({});
+
   const toggleHeart = () => {
     setIsHeartLiked(!isHeartLiked);
   };
 
-  const goToMyPage = () => {
-    navigate(`../mypage`);
+  const goToOtherPage = (userId, postId) => {
+    navigate(`/otherpage/${userId}/${postId}`);
   };
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const response = await getPostAPI();
+      if (response && response.data) {
+        setPosts(response.data.reverse());
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const userIds = [...new Set(posts.map(post => post.userId))]; // Get unique userIds
+      const userPromises = userIds.map(userId => getUserAPI(userId));
+      const userResponses = await Promise.all(userPromises);
+
+      const usersData = userResponses.reduce((acc, response) => {
+        acc[response.id] = response;
+        return acc;
+      }, {});
+
+      setUsers(usersData);
+    };
+
+    if (posts.length > 0) {
+      fetchUsers();
+    }
+  }, [posts]);
 
   return (
     <div>
@@ -33,84 +66,46 @@ function MainPage() {
       <Line1 />
       <Container2>
         <CenteredWrapper>
-          <PostContainer>
-            <Header>
-              <Ppp onClick={goToMyPage}>
-                <ProfileImage src={P_img} alt="Profile img" />
-              </Ppp>
-              <Name onClick={goToMyPage}>
-                cheche
-              </Name>
-              <Btn>
-                <img src={dot} alt="점점점" />
-              </Btn>
-            </Header>
-            <PostImg>
-              <img src={P1} alt="post img" />
-            </PostImg>
-            <BottomContainer>
-              <BottomIcon onClick={toggleHeart}>
-                <img src={isHeartLiked ? r_heart : b_heart} alt="heart icon" />
-              </BottomIcon>
-              <BottomIcon>
-                <img src={comment} alt="comment icon" />
-              </BottomIcon>
-              <BottomIcon>
-                <img src={dm} alt="dm icon" />
-              </BottomIcon>
-              <BottomIcon>
-                <img src={save} alt="save icon" />
-              </BottomIcon>
-            </BottomContainer>
-            <PostContent>
-              좋아요 41.5만개
-              <br />
-              nct 내용오오오옹
-              <br />
-              <p>댓글 5639개 모두 보기</p>
-            </PostContent>
-            <Line2 />
-          </PostContainer>
-          {/* 추가적인 포스트를 위한 반복 */}
-          <PostContainer>
-            <Header>
-              <Ppp onClick={goToMyPage}>
-                <ProfileImage src={P_img} alt="Profile img" />
-              </Ppp>
-              <Name onClick={goToMyPage}>
-                cheche
-              </Name>
-              <Btn>
-                <img src={dot} alt="점점점" />
-              </Btn>
-            </Header>
-            <PostImg>
-              <img src={P1} alt="post img" />
-            </PostImg>
-            <BottomContainer>
-              <BottomIcon onClick={toggleHeart}>
-                <img src={isHeartLiked ? r_heart : b_heart} alt="heart icon" />
-              </BottomIcon>
-              <BottomIcon>
-                <img src={comment} alt="comment icon" />
-              </BottomIcon>
-              <BottomIcon>
-                <img src={dm} alt="dm icon" />
-              </BottomIcon>
-              <BottomIcon>
-                <img src={save} alt="save icon" />
-              </BottomIcon>
-            </BottomContainer>
-            <PostContent>
-              좋아요 41.5만개
-              <br />
-              nct 내용오오오옹
-              <br />
-              <p>댓글 5639개 모두 보기</p>
-            </PostContent>
-            <Line2 />
-          </PostContainer>
-          {/* 여기에 추가 포스트를 반복해서 추가하세요 */}
+          {posts.map((post) => (
+            <PostContainer key={post.id}>
+              <Header>
+                <Ppp onClick={() => goToOtherPage(post.userId, post.id)}>
+                  <ProfileImage src={P_img} alt="Profile img" />
+                </Ppp>
+                <Name onClick={() => goToOtherPage(post.userId, post.id)}>
+                  {users[post.userId]?.name || 'Loading...'}
+                </Name>
+                <Btn>
+                  <img src={dot} alt="점점점" />
+                </Btn>
+              </Header>
+              <PostImg>
+                <img src={post.imgUrl} alt="post img" onClick={() => goToOtherPage(post.userId, post.id)} />
+              </PostImg>
+              <BottomContainer>
+                <BottomIcon onClick={toggleHeart}>
+                  <img src={isHeartLiked ? r_heart : b_heart} alt="heart icon" />
+                </BottomIcon>
+                <BottomIcon>
+                  <img src={comment} alt="comment icon" />
+                </BottomIcon>
+                <BottomIcon>
+                  <img src={dm} alt="dm icon" />
+                </BottomIcon>
+                <BottomIcon>
+                  <img src={save} alt="save icon" />
+                </BottomIcon>
+              </BottomContainer>
+              <PostContent>
+                좋아요 41.5만개
+                <br />
+                {post.content}
+                <br />
+                <p>댓글 5639개 모두 보기</p>
+              </PostContent>
+              <Line2 />
+            </PostContainer>
+          ))}
         </CenteredWrapper>
       </Container2>
     </div>
@@ -141,7 +136,7 @@ const ProfileImage = styled.img`
 
 const Name = styled.div`
   margin-left: 11px;
-  margin-top: 8px;
+  margin-top: 10px;
   color: #FFF;
   font-family: Inter;
   font-size: 16px;

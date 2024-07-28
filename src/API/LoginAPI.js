@@ -12,3 +12,38 @@ export const loginAPI = async (email, password) => {
         console.log(err);
     }
 };
+
+export const logoutAPI = async () => {
+    try{
+        const response = await axios.post(
+            `${server}/api/logout`, {}, { withCredentials: true }
+        );
+        return response.data;
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+// 회원가입
+export const registerAPI = async (email, name) => {
+    try{
+        const response = await axios.post(
+            `${server}/api/`
+        );
+        return response.data;
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+// 회원정보 업데이트
+export const updateUserInfo = async (intro) => {
+    try{
+        const response = await axios.patch(
+            `${server}/api/`
+        );
+        return response.data;
+    } catch (err) {
+        console.log(err);
+    }
+};

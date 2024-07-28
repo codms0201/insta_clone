@@ -4,7 +4,6 @@ import styled, { createGlobalStyle } from 'styled-components';
 import logo from '../Assets/Imgs/logo.svg';
 import { UserData, LoginState } from '../Atom';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { loginAPI } from '../API/LoginAPI';
 import GoogleAuthLogin from '../Components/LoginBtn';
 
 function LoginPage() {

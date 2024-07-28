@@ -11,7 +11,7 @@ import alertIcon from '../Assets/Imgs/alert.svg'; // Rename the import to avoid 
 import profile from '../Assets/Imgs/profile.svg';
 import menubar from '../Assets/Imgs/menubar.svg';
 import { userState } from '../Atom';
-import AuthService from '../API/AuthService';
+import { logoutAPI } from '../API/LoginAPI';
 
 function Menu({ onActiveChange }) {
   const navigate = useNavigate();
@@ -20,8 +20,8 @@ function Menu({ onActiveChange }) {
   const [isActive, setIsActive] = useState(false);
   const resetUserState = useResetRecoilState(userState);
 
-  const handleLogout = () => {
-    AuthService.logout();
+  const handleLogout = async () => {
+    await logoutAPI.logout();
     resetUserState();
     window.alert("로그아웃 되었습니다!"); // Use window.alert to avoid conflict
     navigate("/"); // Navigate to the login page
