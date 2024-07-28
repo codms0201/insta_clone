@@ -13,12 +13,18 @@ const RedirectionAfterLoginPage = () => {
     axiosInstance.get('/api/userinfo')
       .then((response) => {
         setUserInfo(response.data);
+        console.log(response.data);
         navigate('/main');
       })
       .catch((error) => {
         console.error('Fetching user info failed:', error);
       });
   }, [setUserInfo, navigate]);
+
+  useEffect (()=>{
+    console.log(userInfo);
+  
+},[userInfo]);
 
   if (!userInfo) {
     return (
@@ -40,12 +46,14 @@ const Div = styled.div`
   align-items: center;
   justify-content: center;
   background-color: white;
-`;
+  `
+;
 
 const spin = keyframes`
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-`;
+  `
+;
 
 const Spinner = styled.div`
   border: 16px solid blue;
@@ -54,10 +62,12 @@ const Spinner = styled.div`
   width: 120px;
   height: 120px;
   animation: ${spin} 2s linear infinite;
-`;
+  `
+;
 
 const Img = styled.img`
   width: 100px;
   height: 100px;
   object-fit: cover;
-`;
+  `
+;

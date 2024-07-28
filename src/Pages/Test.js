@@ -1,44 +1,66 @@
-import React, { useState } from "react";
-import { uploadToS3 } from "../API/AwsS3";
+import React, { useEffect, useState } from 'react';
+import { getPostAPI, getUserAPI, getUserPostAPI } from '../API/AxiosAPI'; // getPostAPI 함수가 정의된 파일을 import 합니다.
+import { userState } from "../Atom";
+import { useRecoilValue } from 'recoil';
 
-const WritePost = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadResult, setUploadResult] = useState(null);
+const BoardList = () => {
+  const [posts, setPosts] = useState([]);
+  const [user, setUser] = useState(null);
+  const userInfo = useRecoilValue(userState);
 
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
-  };
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const data = await getPostAPI();
+      setPosts(data);
+    };
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      alert("파일을 선택하세요.");
-      return;
-    }
+    fetchPosts();
+  }, []);
 
-    try {
-      const result = await uploadToS3(selectedFile, true);
-      setUploadResult(result);
-      alert("파일 업로드 성공!");
-    } catch (error) {
-      console.error("파일 업로드 실패:", error);
-      alert("파일 업로드 실패!");
-    }
-  };
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const data = await getUserPostAPI(userInfo.memberId);
+      console.log(data);
+      setPosts(data);
+    };
+
+    fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userId = 1;
+        const userData = await getUserAPI(userId);
+        console.log(userData.name);
+        setUser(userData);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   return (
     <div>
-      <h1>글 작성</h1>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>업로드</button>
-      {uploadResult && (
-        <div>
-          <p>파일 키: {uploadResult.key}</p>
-          <p>다운로드 링크: <a href={uploadResult.downloadLink} target="_blank" rel="noopener noreferrer">여기</a></p>
-          {uploadResult.imageUrl && <img src={uploadResult.imageUrl} alt="업로드된 이미지" />}
-        </div>
+      <h1>Board List</h1>
+      {posts.length > 0 ? (
+        <ul>
+          {posts.map(post => (
+            <li key={post.id}>
+              <h2>{post.content}</h2>
+              {post.imgUrl && <img src={post.imgUrl} alt="Post Image" />}
+              <p>Created at: {post.createdAt}</p>
+              <p>Updated at: {post.updatedAt}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No posts available</p>
       )}
     </div>
   );
 };
 
-export default WritePost;
+export default BoardList;

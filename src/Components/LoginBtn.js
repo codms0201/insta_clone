@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { userState } from "../Atom";
-import axios from "axios";
 import { useRecoilState, useResetRecoilState } from "recoil";
 
 const LoginBtn = () => {
@@ -37,9 +36,9 @@ const LoginBtn = () => {
   };
 
   return (
-    <GoogleLoginButton onClick={userInfo ? handleLogout : handleLogin}>
+    <GoogleLoginButton onClick={handleLogin}>
       <FcGoogle />
-      <span>{userInfo ? "Logoutㄱㄱ" : "Login with Googleㄱㄱ"}</span>
+      <span>{userInfo ? "Logoutㄱㄱ" : "Continue with Google"}</span>
     </GoogleLoginButton>
   );
 };
@@ -47,8 +46,10 @@ const LoginBtn = () => {
 export default LoginBtn;
 
 const GoogleLoginButton = styled.button`
-  background-color: grey;
-  color: #4285f4;
+  width: 320px;
+  background-color: white;
+  margin-top: 20px;
+  color: black;
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
@@ -59,17 +60,10 @@ const GoogleLoginButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.3s, transform 0.3s;
 
   &:hover {
-    background-color: blue;
+    background-color: #8e8e8e;
     color: white;
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    background-color: darkblue;
-    transform: translateY(0);
   }
 
   svg {

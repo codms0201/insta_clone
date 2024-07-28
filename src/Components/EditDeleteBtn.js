@@ -1,22 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import dot from '../Assets/Imgs/점점점.svg';
 import P_img from '../Assets/Imgs/우유10.jpeg';
-import { postWritingAPI } from '../API/AxiosAPI';
+import { deletePostAPI, updateWritingAPI, getUserPostAPI } from '../API/AxiosAPI';
+import { useRecoilValue } from 'recoil';
+import { userState } from "../Atom";
 
-function EditDeleteBtn() {
+function EditDeleteBtn({ postId, onPostDeleted }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [writeModalOpen, setWriteModalOpen] = useState(false);
-  const [file, setFile] = useState(null);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [editPostId, setEditPostId] = useState(null);
+  const userInfo = useRecoilValue(userState);
+  const [currentPostIndex, setCurrentPostIndex] = useState(0);
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-    setImagePreview(URL.createObjectURL(selectedFile));
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const data = await getUserPostAPI(userInfo.memberId);
+      if (Array.isArray(data)) {
+        setPosts(data.reverse());
+      } else {
+        setPosts([]);
+      }
+    } catch (error) {
+      setPosts([]);
+    }
   };
 
   const handleContentChange = (e) => {
@@ -25,47 +40,61 @@ function EditDeleteBtn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file || !content) {
-      alert('Both image and content are required.');
+    if (!content) {
+      alert('Content is required.');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('content', content);
-    formData.append('imgUrl', file);
-
-    console.log(content);
-    console.log(file);
-
     setLoading(true);
     try {
-      await postWritingAPI(formData);
-      alert('Post created successfully!');
+      const data = {
+        memberId: userInfo.memberId,
+        content: content,
+        imgUrl: posts[currentPostIndex]?.imgUrl
+      };
+
+      if (editPostId) {
+        await updateWritingAPI(editPostId, data);
+        alert('Post updated successfully!');
+      }
+
       setWriteModalOpen(false);
-      setFile(null);
       setContent('');
-      setImagePreview(null); // Clear the state
+      fetchPosts();
     } catch (err) {
-      setError('Failed to create post.');
+      setError('Failed to update post.');
     } finally {
       setLoading(false);
     }
   };
 
-  const openWriteModal = () => {
+  const openWriteModal = (postId) => {
+    setEditPostId(postId);
     setWriteModalOpen(true);
-    setIsModalOpen(false); // Close the first modal when opening the write modal
+    setIsModalOpen(false);
+    const post = posts.find(post => post.id === postId);
+    setContent(post?.content || '');
+    setCurrentPostIndex(posts.findIndex(post => post.id === postId));
   };
 
   const closeWriteModal = () => {
     setWriteModalOpen(false);
-    setFile(null);
     setContent('');
-    setImagePreview(null); // Clear the state
+    setEditPostId(null);
   };
 
   const handleBtnClick = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deletePostAPI(postId);
+      onPostDeleted(postId); // 부모 컴포넌트에게 삭제 알림
+      setIsModalOpen(false); // 모달 닫기
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+    }
   };
 
   return (
@@ -76,9 +105,9 @@ function EditDeleteBtn() {
       {isModalOpen && (
         <Modal>
           <ModalContent>
-            <M_Btn2>삭제</M_Btn2>
+            <M_Btn2 onClick={handleDelete}>삭제</M_Btn2>
             <Line />
-            <M_Btn onClick={() => openWriteModal()}>수정</M_Btn>
+            <M_Btn onClick={() => openWriteModal(posts[currentPostIndex]?.id)}>수정</M_Btn>
             <Line />
             <M_Btn onClick={() => setIsModalOpen(false)}>취소</M_Btn>
           </ModalContent>
@@ -90,19 +119,12 @@ function EditDeleteBtn() {
           <form onSubmit={handleSubmit}>
             <ModalContent2>
               <ModalHeader>
-                게시물 수정하기
+                게시물 {editPostId ? '수정하기' : '작성하기'}
                 <ShareBtn type="submit" disabled={loading}>공유하기</ShareBtn>
               </ModalHeader>
               <ModalWriteContent>
                 <FileInputWrapper>
-                  <FileInput type="file" id="file" onChange={handleFileChange} />
-                  <FileInputLabel htmlFor="file">
-                    {imagePreview ? (
-                      <img src={imagePreview} alt="Selected" />
-                    ) : (
-                      "사진 업로드 하기!!"
-                    )}
-                  </FileInputLabel>
+                  <img src={posts[currentPostIndex]?.imgUrl} alt="Selected" />
                 </FileInputWrapper>
                 <WriteContent>
                   <P_Modal_Profile2>
@@ -110,7 +132,7 @@ function EditDeleteBtn() {
                       <ProfileImage src={P_img} alt="Profile img" />
                     </Ppp>
                     <Name>
-                      cheche
+                      {userInfo.name}
                     </Name>
                   </P_Modal_Profile2>
                   <Writtings>
@@ -118,7 +140,7 @@ function EditDeleteBtn() {
                       id="content" 
                       value={content} 
                       onChange={handleContentChange} 
-                      placeholder="문구를 입력하세요..."
+                      placeholder="내용을 입력하세요"
                     />
                   </Writtings>
                 </WriteContent>
@@ -137,7 +159,7 @@ const Btn = styled.div`
   width: 22px;
   height: 22px;
   margin-top: 6px;
-  margin-left: 340px;
+  margin-left: 314px;
   &:hover {
     cursor: pointer;
   }
@@ -285,26 +307,17 @@ const FileInputWrapper = styled.div`
   overflow: hidden;
 
   img {
-    width: 450px;
-    height: 450px;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     border-radius: 0px 0px 0px 16px;
   }
 `;
 
-const FileInput = styled.input`
-  display: none;
-`;
-
-const FileInputLabel = styled.label`
+const WriteContent = styled.div`
+  flex-grow: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #D9D9D9;
-  border-radius: 0px 0px 0px 16px;
-  color: #000;
-  cursor: pointer;
-  text-align: center;
+  flex-direction: column;
 `;
 
 const ProfileImage = styled.img`
@@ -329,22 +342,8 @@ const P_Modal_Profile2 = styled.div`
   padding-top: 6px;
 `;
 
-const Ppp = styled.div`
-  margin-left: 18px;
-  width: 37px;
-  height: 37px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  overflow: hidden;
-`;
-
 const Writtings = styled.div`
   margin-top: 20px;
-`;
-
-const WriteContent = styled.div`
-  width: 450px;
-  height: 450px;
 `;
 
 const TextArea = styled.textarea`
@@ -357,4 +356,13 @@ const TextArea = styled.textarea`
   padding: 10px;
   font-family: Inter;
   font-size: 14px;
+`;
+
+const Ppp = styled.div`
+  margin-left: 18px;
+  width: 37px;
+  height: 37px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
 `;
